@@ -43,10 +43,10 @@ public class LightblueLoadGenerator {
                 .build();
         
         Option queriesOption = Option.builder("q")
-                .required(false)
-                .desc("queries.properties file")
+                .required(true)
+                .desc("queries.properties files, merged in order provided")
                 .longOpt("queries")
-                .hasArg()                
+                .hasArgs()
                 .build();              
         
         Option helpOption = Option.builder("h")
@@ -79,24 +79,25 @@ public class LightblueLoadGenerator {
             }
             
             String lbClientFilePath = cmd.getOptionValue("lc");
-            String queriesFilePath = cmd.getOptionValue("q") != null ? cmd.getOptionValue("q") : "queries.properties";
+            String[] queriesFilePaths = cmd.getOptionValues("q");
             boolean runForver = cmd.hasOption("run-forever");
             
-            try (InputStream is = Files.newInputStream(Paths.get(queriesFilePath))) {
-                Properties p = new Properties();
-                p.load(is);
-                
-                LightblueHttpClient client = new LightblueHttpClient(lbClientFilePath);
-                
-                for(RQuery query: RQuery.fromProperties(p)) {
-                    for (int i = 0; i < query.getThreads(); i++) {
-                        new Thread(new QueryRunner(query, client, runForver)).start();
-                    }
-                }                                
-                
-            } catch (IOException e) {
-                log.error("Can read " + queriesFilePath, e);
-                System.exit(1);
+            Properties p = new Properties();
+            for (String queriesFilePath: queriesFilePaths) {
+                try (InputStream is = Files.newInputStream(Paths.get(queriesFilePath))) {
+                    p.load(is);
+                } catch (IOException e) {
+                    log.error("Can read " + queriesFilePath, e);
+                    System.exit(1);
+                }
+            }
+
+            LightblueHttpClient client = new LightblueHttpClient(lbClientFilePath);
+
+            for(RQuery query: RQuery.fromProperties(p)) {
+                for (int i = 0; i < query.getThreads(); i++) {
+                    new Thread(new QueryRunner(query, client, runForver)).start();
+                }
             }
 
         } catch (MissingOptionException e) {

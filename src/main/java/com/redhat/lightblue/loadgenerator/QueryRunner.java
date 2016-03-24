@@ -24,7 +24,7 @@ public class QueryRunner implements Runnable {
 
     public static final int MIN_DELAY_ON_ERROR_MS = 5000;
     
-    public static final int INITIAL_DELAY_PER_THREAD_MS = 5000;
+    public static final int INITIAL_DELAY_PER_THREAD_MS = 5000, MAX_INITIAL_DELAY_MS=120000;
 
     public static final Logger log = LoggerFactory.getLogger(QueryRunner.class);
 
@@ -51,7 +51,7 @@ public class QueryRunner implements Runnable {
                     
                     if (i == 0 && query.getThreads() >= 1) {
                         // add a random wait on first iteration to better distribute the load
-                        Thread.sleep(random.nextInt(INITIAL_DELAY_PER_THREAD_MS*query.getThreads()));
+                        Thread.sleep(random.nextInt(Math.max(INITIAL_DELAY_PER_THREAD_MS*query.getThreads(), MAX_INITIAL_DELAY_MS)));
                     }
                     
                     Range r = query.getRange();
