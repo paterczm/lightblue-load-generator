@@ -92,7 +92,9 @@ public class QueryRunner implements Runnable {
                     Thread.sleep(MIN_DELAY_ON_ERROR_MS+random.nextInt(10000));
                 }
 
-                if (!runForever && query.getLoop() > 0 && ++i >= query.getLoop()) {
+                i++;
+
+                if (!runForever && query.getLoop() > 0 && i >= query.getLoop()) {
                     break;
                 }
             }
