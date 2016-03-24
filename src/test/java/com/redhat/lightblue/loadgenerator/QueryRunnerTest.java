@@ -17,7 +17,7 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.redhat.lightblue.client.LightblueClient;
 import com.redhat.lightblue.client.LightblueException;
 import com.redhat.lightblue.client.request.data.DataFindRequest;
-import com.redhat.lightblue.loadgenerator.Query.Range;
+import com.redhat.lightblue.loadgenerator.RQuery.Range;
 
 import junit.framework.Assert;
 
@@ -27,7 +27,7 @@ public class QueryRunnerTest {
     @Mock
     LightblueClient client;
 
-    List<Query> queries;
+    List<RQuery> queries;
 
     @Before
     public void loadQueries() throws IOException {
@@ -36,12 +36,12 @@ public class QueryRunnerTest {
             properties.load(stream);
         }
 
-        queries = Query.fromProperties(properties);
+        queries = RQuery.fromProperties(properties);
     }
 
     @Test
     public void testQueryRunner() throws LightblueException {
-        Query q1 = new Query("q1", "user", null, new Range(0, 7000000, 1000), 0, 10, 0);
+        RQuery q1 = new RQuery("q1", "user", null, new Range(0, 7000000, 1000, false), 0, 10, 0, false);
 
         new QueryRunner(q1, client).run();
 
@@ -62,7 +62,7 @@ public class QueryRunnerTest {
 
     @Test
     public void testQueryRunner2() throws LightblueException {
-        Query q2 = new Query("q2", "legalEntity", "0.0.3", new Range(1000000, 5000000, 2000), 0, 20, 0);
+        RQuery q2 = new RQuery("q2", "legalEntity", "0.0.3", new Range(1000000, 5000000, 2000, false), 0, 20, 0, false);
 
         new QueryRunner(q2, client).run();
 

@@ -7,19 +7,18 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.redhat.lightblue.client.LightblueClient;
 import com.redhat.lightblue.client.LightblueException;
 import com.redhat.lightblue.client.Operation;
 import com.redhat.lightblue.client.Projection;
+import com.redhat.lightblue.client.Query;
 import com.redhat.lightblue.client.http.HttpMethod;
 import com.redhat.lightblue.client.request.data.DataFindRequest;
 import com.redhat.lightblue.client.request.data.LiteralDataRequest;
 import com.redhat.lightblue.client.response.LightblueDataResponse;
-import com.redhat.lightblue.client.util.JSON;
-import com.redhat.lightblue.loadgenerator.Query.Range;
+import com.redhat.lightblue.loadgenerator.RQuery.Range;
 
 public class QueryRunner implements Runnable {
 
@@ -29,12 +28,12 @@ public class QueryRunner implements Runnable {
 
     public static final Logger log = LoggerFactory.getLogger(QueryRunner.class);
 
-    private final Query query;
+    private final RQuery query;
     private final LightblueClient client;
 
     private static final Random random = new Random(new Date().getTime());
 
-    public QueryRunner(Query query, LightblueClient client) {
+    public QueryRunner(RQuery query, LightblueClient client) {
         super();
         this.query = query;
         this.client = client;
@@ -64,17 +63,25 @@ public class QueryRunner implements Runnable {
                             : new DataFindRequest(query.getEntity());
 
                     dfr.select(Projection.includeFieldRecursively("*"));
-                    dfr.range(from, to);
+                    if (!query.isWithSave()) {
+                        // far ranges can take very long to fetch, b/c the cursor needs to travel far
+                        dfr.range(from, to);
+                    } else {
+                        // use index
+                        // works only for numeric _ids
+                        dfr.where(Query.and(Query.withValue("_id", Query.gte, from), Query.withValue("_id", Query.lte, to)));
+                    }
 
                     log.info(String.format("Iteration %d: Running query %s from %d to %d", i, query, from, to));
                     LightblueDataResponse response = client.data(dfr);
 
-//                    if (query.isWithSave()) {
-//                        // save data back to lightblue
-//                        LiteralDataRequest save = new LiteralDataRequest(query.getEntity(), query.getVersion(), createSaveRequestBody(response.getProcessed()), HttpMethod.POST, "save", Operation.SAVE);
-//
-//                        client.data(save);
-//                    }
+                    if (query.isWithSave()) {
+                        // save data back to lightblue
+                        LiteralDataRequest save = new LiteralDataRequest(query.getEntity(), query.getVersion(), createSaveRequestBody(response.getProcessed()), HttpMethod.POST, "save", Operation.SAVE);
+
+                        log.info(String.format("Iteration %d: Saving back results of query %s", i, query));
+                        client.data(save);
+                    }
 
                     Thread.sleep(query.getDelayMS());
 

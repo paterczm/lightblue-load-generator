@@ -80,7 +80,7 @@ public class LightblueLoadGenerator {
                 
                 LightblueHttpClient client = new LightblueHttpClient(lbClientFilePath);
                 
-                for(Query query: Query.fromProperties(p)) {
+                for(RQuery query: RQuery.fromProperties(p)) {
                     for (int i = 0; i < query.getThreads(); i++) {
                         new Thread(new QueryRunner(query, client)).start();
                     }

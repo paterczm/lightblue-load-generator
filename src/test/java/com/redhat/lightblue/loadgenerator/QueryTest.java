@@ -19,7 +19,7 @@ public class QueryTest {
             properties.load(stream);
         }
         
-        List<Query> queries = Query.fromProperties(properties);
+        List<RQuery> queries = RQuery.fromProperties(properties);
         
         Assert.assertEquals(3, queries.size());
     }
