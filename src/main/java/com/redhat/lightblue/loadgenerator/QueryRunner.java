@@ -30,13 +30,15 @@ public class QueryRunner implements Runnable {
 
     private final RQuery query;
     private final LightblueClient client;
+    private final boolean runForever;
 
     private static final Random random = new Random(new Date().getTime());
 
-    public QueryRunner(RQuery query, LightblueClient client) {
+    public QueryRunner(RQuery query, LightblueClient client, boolean runForever) {
         super();
         this.query = query;
         this.client = client;
+        this.runForever = runForever;
     }
 
     @Override
@@ -90,7 +92,7 @@ public class QueryRunner implements Runnable {
                     Thread.sleep(MIN_DELAY_ON_ERROR_MS+random.nextInt(10000));
                 }
 
-                if (query.getLoop() > 0 && ++i >= query.getLoop()) {
+                if (!runForever && query.getLoop() > 0 && ++i >= query.getLoop()) {
                     break;
                 }
             }

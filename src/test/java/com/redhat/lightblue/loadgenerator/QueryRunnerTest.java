@@ -43,7 +43,7 @@ public class QueryRunnerTest {
     public void testQueryRunner() throws LightblueException {
         RQuery q1 = new RQuery("q1", "user", null, new Range(0, 7000000, 1000, false), 0, 10, 0, false);
 
-        new QueryRunner(q1, client).run();
+        new QueryRunner(q1, client, false).run();
 
         ArgumentCaptor<DataFindRequest> argument = ArgumentCaptor.forClass(DataFindRequest.class);
 
@@ -64,7 +64,7 @@ public class QueryRunnerTest {
     public void testQueryRunner2() throws LightblueException {
         RQuery q2 = new RQuery("q2", "legalEntity", "0.0.3", new Range(1000000, 5000000, 2000, false), 0, 20, 0, false);
 
-        new QueryRunner(q2, client).run();
+        new QueryRunner(q2, client, false).run();
 
         ArgumentCaptor<DataFindRequest> argument = ArgumentCaptor.forClass(DataFindRequest.class);
 

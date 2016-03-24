@@ -53,12 +53,19 @@ public class LightblueLoadGenerator {
                 .required(false)
                 .desc("prints usage")
                 .longOpt("help")                
+                .build();
+
+        Option runForeverOption = Option.builder()
+                .required(false)
+                .desc("Ignores the loop setting and runs forever")
+                .longOpt("run-forever")
                 .build(); 
 
         // add options
         options.addOption(lbClientOption);
         options.addOption(queriesOption);
         options.addOption(helpOption);
+        options.addOption(runForeverOption);
         
         try {
             CommandLineParser parser = new DefaultParser();
@@ -73,6 +80,7 @@ public class LightblueLoadGenerator {
             
             String lbClientFilePath = cmd.getOptionValue("lc");
             String queriesFilePath = cmd.getOptionValue("q") != null ? cmd.getOptionValue("q") : "queries.properties";
+            boolean runForver = cmd.hasOption("run-forever");
             
             try (InputStream is = Files.newInputStream(Paths.get(queriesFilePath))) {
                 Properties p = new Properties();
@@ -82,7 +90,7 @@ public class LightblueLoadGenerator {
                 
                 for(RQuery query: RQuery.fromProperties(p)) {
                     for (int i = 0; i < query.getThreads(); i++) {
-                        new Thread(new QueryRunner(query, client)).start();
+                        new Thread(new QueryRunner(query, client, runForver)).start();
                     }
                 }                                
                 
