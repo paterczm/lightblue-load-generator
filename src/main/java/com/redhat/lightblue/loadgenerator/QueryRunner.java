@@ -6,10 +6,19 @@ import java.util.Random;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.redhat.lightblue.client.LightblueClient;
 import com.redhat.lightblue.client.LightblueException;
+import com.redhat.lightblue.client.Operation;
 import com.redhat.lightblue.client.Projection;
+import com.redhat.lightblue.client.http.HttpMethod;
 import com.redhat.lightblue.client.request.data.DataFindRequest;
+import com.redhat.lightblue.client.request.data.LiteralDataRequest;
+import com.redhat.lightblue.client.response.LightblueDataResponse;
+import com.redhat.lightblue.client.util.JSON;
 import com.redhat.lightblue.loadgenerator.Query.Range;
 
 public class QueryRunner implements Runnable {
@@ -58,7 +67,14 @@ public class QueryRunner implements Runnable {
                     dfr.range(from, to);
 
                     log.info(String.format("Iteration %d: Running query %s from %d to %d", i, query, from, to));
-                    client.data(dfr);
+                    LightblueDataResponse response = client.data(dfr);
+
+//                    if (query.isWithSave()) {
+//                        // save data back to lightblue
+//                        LiteralDataRequest save = new LiteralDataRequest(query.getEntity(), query.getVersion(), createSaveRequestBody(response.getProcessed()), HttpMethod.POST, "save", Operation.SAVE);
+//
+//                        client.data(save);
+//                    }
 
                     Thread.sleep(query.getDelayMS());
 
@@ -75,6 +91,18 @@ public class QueryRunner implements Runnable {
             e.printStackTrace();
         }
 
+    }
+
+    private JsonNode createSaveRequestBody(JsonNode data) {
+        ObjectNode node = JsonNodeFactory.instance.objectNode();
+
+        node.set("projection", Projection.includeFieldRecursively("*").toJson());
+
+        node.set("data", data);
+
+        node.set("upsert", JsonNodeFactory.instance.booleanNode(true));
+
+        return node;
     }
 
 }

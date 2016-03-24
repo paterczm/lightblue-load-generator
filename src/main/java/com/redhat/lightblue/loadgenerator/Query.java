@@ -29,7 +29,7 @@ public class Query {
         }
     }
 
-    public Query(String queryName, String entity, String version, Range range, int threads, int loop, int delayMS) {
+    public Query(String queryName, String entity, String version, Range range, int threads, int loop, int delayMS, boolean withSave) {
         super();
         this.entity = entity;
         this.version = version;
@@ -38,6 +38,7 @@ public class Query {
         this.loop = loop;
         this.delayMS = delayMS;
         this.name = queryName;
+        this.withSave = withSave;
 
         Objects.requireNonNull(entity);        
         Objects.requireNonNull(range);
@@ -46,6 +47,7 @@ public class Query {
 
     private String entity, version, name;
     private Range range;
+    boolean withSave;
 
     private int threads, loop, delayMS;
   
@@ -71,8 +73,9 @@ public class Query {
         int threads = Integer.parseInt(p.getProperty(name + ".threads", "1"));
         int loop = Integer.parseInt(p.getProperty(name + ".loop", "0"));
         int delay = Integer.parseInt(p.getProperty(name + ".delayMS", "1000"));
+        boolean withSave = Boolean.parseBoolean(p.getProperty(name+".withSave", "false"));
 
-        return new Query(name, entity, version, range, threads, loop, delay);
+        return new Query(name, entity, version, range, threads, loop, delay, withSave);
     }
     
     public static List<Query> fromProperties(Properties p) {
@@ -114,6 +117,10 @@ public class Query {
 
     public String getName() {
         return name;
+    }
+
+    public boolean isWithSave() {
+        return withSave;
     }
 
 }
