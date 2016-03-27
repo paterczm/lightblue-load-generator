@@ -77,6 +77,12 @@ public class Stats implements Runnable {
         }
     }
 
+    public void printStats() {
+        for (String query: successfulCalls.keySet().stream().sorted().collect(Collectors.toList())) {
+            Stats.getInstance().printStats(query);
+        }
+    }
+
     private final static Stats stats = new Stats();
 
     public static Stats getInstance() {
@@ -95,9 +101,7 @@ public class Stats implements Runnable {
             while (true) {
                 Thread.sleep(CALCULATE_STATS_EVERY_MS);
 
-                for (String query: successfulCalls.keySet().stream().sorted().collect(Collectors.toList())) {
-                    Stats.getInstance().printStats(query);
-                }
+                printStats();
             }
 
         } catch (InterruptedException e) {

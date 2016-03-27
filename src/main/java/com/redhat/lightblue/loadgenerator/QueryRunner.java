@@ -29,15 +29,17 @@ public class QueryRunner implements Runnable {
     private final RQuery query;
     private final LightblueClient client;
     private final boolean runForever, stats;
+    private Date runUntil;
 
     private static final Random random = new Random(new Date().getTime());
 
-    public QueryRunner(RQuery query, LightblueClient client, boolean runForever, boolean stats) {
+    public QueryRunner(RQuery query, LightblueClient client, boolean runForever, Date runUntil, boolean stats) {
         super();
         this.query = query;
         this.client = client;
         this.runForever = runForever;
         this.stats = stats;
+        this.runUntil = runUntil;
     }
 
     @Override
@@ -114,8 +116,17 @@ public class QueryRunner implements Runnable {
 
                 i++;
 
-                if (!runForever && query.getLoop() > 0 && i >= query.getLoop()) {
+                if (!runForever && (query.getLoop() > 0 && i >= query.getLoop())) {
+                    log.info("Max iterations reached, stopping thread");
                     break;
+                }
+
+                if (!runForever && (runUntil != null && new Date().after(runUntil))) {
+                    if (stats) {
+                        Stats.getInstance().printStats();
+                    }
+                    log.info("Max time reached, stopping...");
+                    System.exit(0);
                 }
             }
         } catch (InterruptedException e) {

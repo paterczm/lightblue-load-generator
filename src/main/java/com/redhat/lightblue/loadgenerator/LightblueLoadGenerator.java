@@ -3,9 +3,8 @@ package com.redhat.lightblue.loadgenerator;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.List;
+import java.util.Date;
 import java.util.Properties;
 
 import org.apache.commons.cli.CommandLine;
@@ -61,6 +60,13 @@ public class LightblueLoadGenerator {
                 .longOpt("run-forever")
                 .build();
 
+        Option runForMinutesOption = Option.builder()
+                .required(false)
+                .desc("Ignores the loop setting and runs for specified number of minutes")
+                .longOpt("run-for-minutes")
+                .hasArg()
+                .build();
+
         Option statsOption = Option.builder("s")
                 .required(false)
                 .desc("Enables stats. Note: stats consume resources.")
@@ -79,6 +85,7 @@ public class LightblueLoadGenerator {
         options.addOption(queriesOption);
         options.addOption(helpOption);
         options.addOption(runForeverOption);
+        options.addOption(runForMinutesOption);
         options.addOption(statsOption);
         options.addOption(statsDelayOption);
         
@@ -97,6 +104,7 @@ public class LightblueLoadGenerator {
             String[] queriesFilePaths = cmd.getOptionValues("q");
             boolean runForver = cmd.hasOption("run-forever");
             boolean stats = cmd.hasOption("stats");
+            Date runUntil = cmd.hasOption("run-for-minutes") ? new Date(new Date().getTime() + 1000*60*Integer.parseInt(cmd.getOptionValue("run-for-minutes"))) : null;
             Stats.CALCULATE_STATS_EVERY_MS = cmd.getOptionValue("stats-delay") == null ? Stats.CALCULATE_STATS_EVERY_MS : Integer.parseInt(cmd.getOptionValue("stats-delay"));
 
             if (stats)
@@ -116,7 +124,7 @@ public class LightblueLoadGenerator {
 
             for(RQuery query: RQuery.fromProperties(p)) {
                 for (int i = 0; i < query.getThreads(); i++) {
-                    new Thread(new QueryRunner(query, client, runForver, stats)).start();
+                    new Thread(new QueryRunner(query, client, runForver, runUntil, stats)).start();
                 }
             }
 
