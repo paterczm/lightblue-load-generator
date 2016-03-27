@@ -5,7 +5,10 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
+import org.nohope.typetools.SortedList;
+import org.nohope.typetools.SortedList.SerializableComparator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -26,11 +29,18 @@ public class Stats implements Runnable {
 
         synchronized (queryName.intern()) {
             if (!successfulCalls.containsKey(queryName)) {
-                successfulCalls.put(queryName, new ArrayList<Integer>());
+                successfulCalls.put(queryName, new SortedList<Integer>(new SerializableComparator<Integer>() {
+                    private static final long serialVersionUID = 1L;
+
+                    @Override
+                    public int compare(Integer o1, Integer o2) {
+                        return o1.compareTo(o2);
+                    }
+
+                }));
             }
 
             successfulCalls.get(queryName).add(tookMS);
-            Collections.sort(successfulCalls.get(queryName));
         }
     }
 
@@ -46,8 +56,6 @@ public class Stats implements Runnable {
 
     public String getStats(String queryName) {
         synchronized (queryName.intern()) {
-            Collections.sort(successfulCalls.get(queryName));
-
             int failedCallsCount = failedCalls.get(queryName) == null ? 0 : failedCalls.get(queryName);
             int successfullCallsCount = successfulCalls.get(queryName).size();
             int totalCallsCount = failedCallsCount + successfullCallsCount;
@@ -82,7 +90,7 @@ public class Stats implements Runnable {
             while (true) {
                 Thread.sleep(CALCULATE_STATS_EVERY_MS);
 
-                for (String query: successfulCalls.keySet()) {
+                for (String query: successfulCalls.keySet().stream().sorted().collect(Collectors.toList())) {
                     log.info(Stats.getInstance().getStats(query));
                 }
             }
