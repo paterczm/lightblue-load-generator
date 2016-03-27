@@ -1,7 +1,5 @@
 package com.redhat.lightblue.loadgenerator;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -16,7 +14,7 @@ public class Stats implements Runnable {
 
     public static final Logger log = LoggerFactory.getLogger(Stats.class);
 
-    public static int CALCULATE_STATS_EVERY_MS = 10000;
+    public static int CALCULATE_STATS_EVERY_MS = 15000;
 
     private Stats() {
         log.info("Starting stats (delay="+CALCULATE_STATS_EVERY_MS+"ms)");

@@ -21,8 +21,6 @@ import com.redhat.lightblue.client.response.LightblueDataResponse;
 import com.redhat.lightblue.loadgenerator.RQuery.Range;
 
 public class QueryRunner implements Runnable {
-
-    public static final int MIN_DELAY_ON_ERROR_MS = 5000;
     
     public static final int INITIAL_DELAY_PER_THREAD_MS = 5000, MAX_INITIAL_DELAY_MS=120000;
 
@@ -110,8 +108,8 @@ public class QueryRunner implements Runnable {
                             Stats.getInstance().failedCall("find-"+query.getName());
                         }
                     }
-                    log.error("Error calling lightblue, waiting " + MIN_DELAY_ON_ERROR_MS + "ms", e);
-                    Thread.sleep(MIN_DELAY_ON_ERROR_MS+random.nextInt(10000));
+                    log.error("Error calling lightblue", e);
+                    Thread.sleep(query.getDelayMS());
                 }
 
                 i++;
