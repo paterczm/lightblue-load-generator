@@ -1,5 +1,7 @@
 package com.redhat.lightblue.loadgenerator;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -12,7 +14,10 @@ import org.slf4j.LoggerFactory;
 
 public class Stats implements Runnable {
 
-    public static final Logger log = LoggerFactory.getLogger(Stats.class);
+    static Logger log = LoggerFactory.getLogger(Stats.class);
+    static Logger logCsv = LoggerFactory.getLogger(Stats.class.getSimpleName()+"Csv");
+
+    public static final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
 
     public static int CALCULATE_STATS_EVERY_MS = 15000;
 
@@ -52,7 +57,7 @@ public class Stats implements Runnable {
         failedCalls.put(queryName, currentFailedCount + 1);
     }
 
-    public String getStats(String queryName) {
+    public void printStats(String queryName) {
         synchronized (queryName.intern()) {
             int failedCallsCount = failedCalls.get(queryName) == null ? 0 : failedCalls.get(queryName);
             int successfullCallsCount = successfulCalls.get(queryName).size();
@@ -65,8 +70,10 @@ public class Stats implements Runnable {
             int perc90 = successfullCallsArray[successfullCallsCount * 9 / 10];
             int perc95 = successfullCallsArray[successfullCallsCount * 19 / 20];
 
-            return String.format("Stats for %s: totalCalls=%d, failedCalls=%d%%, perc50=%dms, perc75=%dms, perc90=%dms, perc95=%dms", queryName,
-                    totalCallsCount, (int) (100f * failedCallsCount / totalCallsCount), perc50, perc75, perc90, perc95);
+            log.info(String.format("%s: totalCalls=%d, failedCalls=%d%%, perc50=%dms, perc75=%dms, perc90=%dms, perc95=%dms", queryName,
+                    totalCallsCount, (int) (100f * failedCallsCount / totalCallsCount), perc50, perc75, perc90, perc95));
+            logCsv.info(String.format("%s,%s,%d,%f,%d,%d,%d,%d", dateFormat.format(new Date()), queryName,
+                    totalCallsCount, (float) (1f * failedCallsCount / totalCallsCount), perc50, perc75, perc90, perc95));
         }
     }
 
@@ -89,7 +96,7 @@ public class Stats implements Runnable {
                 Thread.sleep(CALCULATE_STATS_EVERY_MS);
 
                 for (String query: successfulCalls.keySet().stream().sorted().collect(Collectors.toList())) {
-                    log.info(Stats.getInstance().getStats(query));
+                    Stats.getInstance().printStats(query);
                 }
             }
 
