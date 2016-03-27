@@ -59,13 +59,20 @@ public class LightblueLoadGenerator {
                 .required(false)
                 .desc("Ignores the loop setting and runs forever")
                 .longOpt("run-forever")
-                .build(); 
+                .build();
+
+        Option noStatsOption = Option.builder()
+                .required(false)
+                .desc("Does not calculate stats every 10 iterations")
+                .longOpt("no-stats")
+                .build();
 
         // add options
         options.addOption(lbClientOption);
         options.addOption(queriesOption);
         options.addOption(helpOption);
         options.addOption(runForeverOption);
+        options.addOption(noStatsOption);
         
         try {
             CommandLineParser parser = new DefaultParser();
@@ -81,6 +88,7 @@ public class LightblueLoadGenerator {
             String lbClientFilePath = cmd.getOptionValue("lc");
             String[] queriesFilePaths = cmd.getOptionValues("q");
             boolean runForver = cmd.hasOption("run-forever");
+            boolean noStats = cmd.hasOption("no-stats");
             
             Properties p = new Properties();
             for (String queriesFilePath: queriesFilePaths) {
@@ -96,7 +104,7 @@ public class LightblueLoadGenerator {
 
             for(RQuery query: RQuery.fromProperties(p)) {
                 for (int i = 0; i < query.getThreads(); i++) {
-                    new Thread(new QueryRunner(query, client, runForver)).start();
+                    new Thread(new QueryRunner(query, client, runForver, noStats)).start();
                 }
             }
 
@@ -106,9 +114,5 @@ public class LightblueLoadGenerator {
             formatter.printHelp(LightblueLoadGenerator.class.getSimpleName(), options);            
             System.exit(1);
         }
-        
-        
-
-        
     }
 }

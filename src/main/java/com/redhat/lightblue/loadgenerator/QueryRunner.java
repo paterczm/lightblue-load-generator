@@ -30,15 +30,16 @@ public class QueryRunner implements Runnable {
 
     private final RQuery query;
     private final LightblueClient client;
-    private final boolean runForever;
+    private final boolean runForever, noStats;
 
     private static final Random random = new Random(new Date().getTime());
 
-    public QueryRunner(RQuery query, LightblueClient client, boolean runForever) {
+    public QueryRunner(RQuery query, LightblueClient client, boolean runForever, boolean noStats) {
         super();
         this.query = query;
         this.client = client;
         this.runForever = runForever;
+        this.noStats = noStats;
     }
 
     @Override
@@ -47,6 +48,7 @@ public class QueryRunner implements Runnable {
         try {
             int i = 0;
             while (true) {
+                boolean findQueryCompleted = false;
                 try {
                     
                     if (i == 0 && query.getThreads() >= 1) {
@@ -65,7 +67,7 @@ public class QueryRunner implements Runnable {
                             : new DataFindRequest(query.getEntity());
 
                     dfr.select(Projection.includeFieldRecursively("*"));
-                    if (!query.isWithSave()) {
+                    if (!query.getRange().isIdRange()) {
                         // far ranges can take very long to fetch, b/c the cursor needs to travel far
                         dfr.range(from, to);
                     } else {
@@ -75,19 +77,51 @@ public class QueryRunner implements Runnable {
                     }
 
                     log.info(String.format("Iteration %d: Running query %s from %d to %d", i, query, from, to));
+                    long t0 = new Date().getTime();
                     LightblueDataResponse response = client.data(dfr);
+                    long t1 = new Date().getTime();
+                    findQueryCompleted = true;
+
+                    if (!noStats) {
+
+                        Stats.getInstance().successfullCall("find-"+query.getName(), (int)(t1-t0));
+
+                        if (i > 0 && i % Stats.CALCULATE_STATS_EVERY_N_ITERATIONS == 0) {
+                            log.info(String.format("Iteration %d: %s", i, Stats.getInstance().getStats("find-"+query.getName())));
+
+                        }
+                    }
 
                     if (query.isWithSave()) {
                         // save data back to lightblue
                         LiteralDataRequest save = new LiteralDataRequest(query.getEntity(), query.getVersion(), createSaveRequestBody(response.getProcessed()), HttpMethod.POST, "save", Operation.SAVE);
 
                         log.info(String.format("Iteration %d: Saving back results of query %s", i, query));
+                        t0 = new Date().getTime();
                         client.data(save);
+                        t1 = new Date().getTime();
+
+                        if (!noStats) {
+
+                            Stats.getInstance().successfullCall("save-"+query.getName(), (int)(t1-t0));
+
+                            if (i > 0 && i % Stats.CALCULATE_STATS_EVERY_N_ITERATIONS == 0) {
+                                log.info(String.format("Iteration %d: %s", i, Stats.getInstance().getStats("save-"+query.getName())));
+
+                            }
+                        }
                     }
 
                     Thread.sleep(query.getDelayMS());
 
                 } catch (LightblueException e) {
+                    if (!noStats) {
+                        if (findQueryCompleted)
+                            Stats.getInstance().failedCall("save-"+query.getName());
+                        else {
+                            Stats.getInstance().failedCall("find-"+query.getName());
+                        }
+                    }
                     log.error("Error calling lightblue, waiting " + MIN_DELAY_ON_ERROR_MS + "ms", e);
                     Thread.sleep(MIN_DELAY_ON_ERROR_MS+random.nextInt(10000));
                 }
