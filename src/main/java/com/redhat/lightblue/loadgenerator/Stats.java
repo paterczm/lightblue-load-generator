@@ -1,21 +1,22 @@
 package com.redhat.lightblue.loadgenerator;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.nohope.typetools.SortedList;
-import org.nohope.typetools.SortedList.SerializableComparator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class Stats {
+public class Stats implements Runnable {
 
     public static final Logger log = LoggerFactory.getLogger(Stats.class);
 
-    public static final int CALCULATE_STATS_EVERY_N_ITERATIONS = 20;
+    public static int CALCULATE_STATS_EVERY_MS = 10000;
 
     private Stats() {
+        log.info("Starting stats (delay="+CALCULATE_STATS_EVERY_MS+"ms)");
     }
 
     private Map<String, List<Integer>> successfulCalls = new ConcurrentHashMap<>();
@@ -23,24 +24,13 @@ public class Stats {
 
     public void successfullCall(String queryName, int tookMS) {
 
-        synchronized (queryName) {
+        synchronized (queryName.intern()) {
             if (!successfulCalls.containsKey(queryName)) {
-                successfulCalls.put(queryName, new SortedList<Integer>(new SerializableComparator<Integer>() {
-                    private static final long serialVersionUID = 1L;
-
-                    @Override
-                    public int compare(Integer o1, Integer o2) {
-                        try {
-                            return o1.compareTo(o2);
-                        } catch (NullPointerException e) {
-                            log.error(o1+" "+o2, e);
-                            throw e;
-                        }
-                    }
-                }));
+                successfulCalls.put(queryName, new ArrayList<Integer>());
             }
 
             successfulCalls.get(queryName).add(tookMS);
+            Collections.sort(successfulCalls.get(queryName));
         }
     }
 
@@ -55,7 +45,9 @@ public class Stats {
     }
 
     public String getStats(String queryName) {
-        synchronized (queryName) {
+        synchronized (queryName.intern()) {
+            Collections.sort(successfulCalls.get(queryName));
+
             int failedCallsCount = failedCalls.get(queryName) == null ? 0 : failedCalls.get(queryName);
             int successfullCallsCount = successfulCalls.get(queryName).size();
             int totalCallsCount = failedCallsCount + successfullCallsCount;
@@ -76,6 +68,29 @@ public class Stats {
 
     public static Stats getInstance() {
         return stats;
+    }
+
+    public static void init() {
+        new Thread(getInstance()).start();
+    }
+
+    @Override
+    public void run() {
+
+        try {
+
+            while (true) {
+                Thread.sleep(CALCULATE_STATS_EVERY_MS);
+
+                for (String query: successfulCalls.keySet()) {
+                    log.info(Stats.getInstance().getStats(query));
+                }
+            }
+
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
     }
 
 }

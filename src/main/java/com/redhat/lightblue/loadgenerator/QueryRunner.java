@@ -30,16 +30,16 @@ public class QueryRunner implements Runnable {
 
     private final RQuery query;
     private final LightblueClient client;
-    private final boolean runForever, noStats;
+    private final boolean runForever, stats;
 
     private static final Random random = new Random(new Date().getTime());
 
-    public QueryRunner(RQuery query, LightblueClient client, boolean runForever, boolean noStats) {
+    public QueryRunner(RQuery query, LightblueClient client, boolean runForever, boolean stats) {
         super();
         this.query = query;
         this.client = client;
         this.runForever = runForever;
-        this.noStats = noStats;
+        this.stats = stats;
     }
 
     @Override
@@ -82,14 +82,8 @@ public class QueryRunner implements Runnable {
                     long t1 = new Date().getTime();
                     findQueryCompleted = true;
 
-                    if (!noStats) {
-
+                    if (stats) {
                         Stats.getInstance().successfullCall("find-"+query.getName(), (int)(t1-t0));
-
-                        if (i > 0 && i % Stats.CALCULATE_STATS_EVERY_N_ITERATIONS == 0) {
-                            log.info(String.format("Iteration %d: %s", i, Stats.getInstance().getStats("find-"+query.getName())));
-
-                        }
                     }
 
                     if (query.isWithSave()) {
@@ -101,21 +95,15 @@ public class QueryRunner implements Runnable {
                         client.data(save);
                         t1 = new Date().getTime();
 
-                        if (!noStats) {
-
+                        if (stats) {
                             Stats.getInstance().successfullCall("save-"+query.getName(), (int)(t1-t0));
-
-                            if (i > 0 && i % Stats.CALCULATE_STATS_EVERY_N_ITERATIONS == 0) {
-                                log.info(String.format("Iteration %d: %s", i, Stats.getInstance().getStats("save-"+query.getName())));
-
-                            }
                         }
                     }
 
                     Thread.sleep(query.getDelayMS());
 
                 } catch (LightblueException e) {
-                    if (!noStats) {
+                    if (stats) {
                         if (findQueryCompleted)
                             Stats.getInstance().failedCall("save-"+query.getName());
                         else {

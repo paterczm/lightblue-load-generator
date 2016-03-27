@@ -61,10 +61,17 @@ public class LightblueLoadGenerator {
                 .longOpt("run-forever")
                 .build();
 
-        Option noStatsOption = Option.builder()
+        Option statsOption = Option.builder("s")
                 .required(false)
-                .desc("Does not calculate stats every 10 iterations")
-                .longOpt("no-stats")
+                .desc("Enables stats. Note: stats consume resources.")
+                .longOpt("stats")
+                .build();
+
+        Option statsDelayOption = Option.builder()
+                .required(false)
+                .desc("How often generate stats (in ms)")
+                .longOpt("stats-delay")
+                .hasArg()
                 .build();
 
         // add options
@@ -72,7 +79,8 @@ public class LightblueLoadGenerator {
         options.addOption(queriesOption);
         options.addOption(helpOption);
         options.addOption(runForeverOption);
-        options.addOption(noStatsOption);
+        options.addOption(statsOption);
+        options.addOption(statsDelayOption);
         
         try {
             CommandLineParser parser = new DefaultParser();
@@ -88,7 +96,11 @@ public class LightblueLoadGenerator {
             String lbClientFilePath = cmd.getOptionValue("lc");
             String[] queriesFilePaths = cmd.getOptionValues("q");
             boolean runForver = cmd.hasOption("run-forever");
-            boolean noStats = cmd.hasOption("no-stats");
+            boolean stats = cmd.hasOption("stats");
+            Stats.CALCULATE_STATS_EVERY_MS = cmd.getOptionValue("stats-delay") == null ? Stats.CALCULATE_STATS_EVERY_MS : Integer.parseInt(cmd.getOptionValue("stats-delay"));
+
+            if (stats)
+                Stats.init();
             
             Properties p = new Properties();
             for (String queriesFilePath: queriesFilePaths) {
@@ -104,7 +116,7 @@ public class LightblueLoadGenerator {
 
             for(RQuery query: RQuery.fromProperties(p)) {
                 for (int i = 0; i < query.getThreads(); i++) {
-                    new Thread(new QueryRunner(query, client, runForver, noStats)).start();
+                    new Thread(new QueryRunner(query, client, runForver, stats)).start();
                 }
             }
 
