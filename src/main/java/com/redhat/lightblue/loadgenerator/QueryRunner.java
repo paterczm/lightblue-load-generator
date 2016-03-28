@@ -116,7 +116,7 @@ public class QueryRunner implements Runnable {
 
                 i++;
 
-                if (!runForever && (query.getLoop() > 0 && i >= query.getLoop())) {
+                if (!runForever && runUntil == null && (query.getLoop() > 0 && i >= query.getLoop())) {
                     log.info("Max iterations reached, stopping thread");
                     break;
                 }
