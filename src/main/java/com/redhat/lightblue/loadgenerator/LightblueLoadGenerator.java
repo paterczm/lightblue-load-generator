@@ -36,16 +36,18 @@ public class LightblueLoadGenerator {
         
         Option lbClientOption = Option.builder("lc")
                 .required(true)
-                .desc("lightblue-client.properties file")
+                .desc("Configuration file for lightblue-client")
                 .longOpt("lightblue-client")
                 .hasArg()
+                .argName("lightblue-client.properties")
                 .build();
         
         Option queriesOption = Option.builder("q")
                 .required(true)
-                .desc("queries.properties files, merged in order provided")
+                .desc("Property files with queries, merged in order provided")
                 .longOpt("queries")
                 .hasArgs()
+                .argName("queries.properties")
                 .build();              
         
         Option helpOption = Option.builder("h")
@@ -75,9 +77,10 @@ public class LightblueLoadGenerator {
 
         Option statsDelayOption = Option.builder()
                 .required(false)
-                .desc("How often generate stats (in ms)")
+                .desc("How often generate stats")
                 .longOpt("stats-delay")
                 .hasArg()
+                .argName("minutes")
                 .build();
 
         // add options
@@ -131,7 +134,7 @@ public class LightblueLoadGenerator {
         } catch (MissingOptionException e) {
             log.error(e.getMessage());
             HelpFormatter formatter = new HelpFormatter();
-            formatter.printHelp(LightblueLoadGenerator.class.getSimpleName(), options);            
+            formatter.printHelp(120, LightblueLoadGenerator.class.getSimpleName(), "", options, "See https://github.com/paterczm/lightblue-load-generator/");
             System.exit(1);
         }
     }
