@@ -80,7 +80,7 @@ public class RQuery {
         range.isIdRange = Boolean.parseBoolean(p.getProperty(name + ".range.isIdRange", "false"));
         int threads = Integer.parseInt(p.getProperty(name + ".threads"));
         int loop = Integer.parseInt(p.getProperty(name + ".loop", "0"));
-        int delay = Integer.parseInt(p.getProperty(name + ".delayMS", "1000"));
+        int delay = Integer.parseInt(p.getProperty(name + ".delayMS", "100"));
         boolean withSave = Boolean.parseBoolean(p.getProperty(name + ".withSave", "false"));
 
         return new RQuery(name, entity, version, range, threads, loop, delay, withSave);
