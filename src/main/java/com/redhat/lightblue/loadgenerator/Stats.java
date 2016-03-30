@@ -21,7 +21,7 @@ public class Stats implements Runnable {
 
     public final int CALCULATE_STATS_EVERY_MS;
 
-    private Stats(int calculateStatsEveryMs) {
+    public Stats(int calculateStatsEveryMs) {
         this.CALCULATE_STATS_EVERY_MS = calculateStatsEveryMs;
         log.info("Starting stats (delay="+CALCULATE_STATS_EVERY_MS+"ms)");
     }
@@ -87,6 +87,8 @@ public class Stats implements Runnable {
     private static Stats stats = null;
 
     public static Stats getInstance() {
+        if (stats == null)
+            throw new IllegalStateException("Stats not initialized. Run Stats.init() first.");
         return stats;
     }
 

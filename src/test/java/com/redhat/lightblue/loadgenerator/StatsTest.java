@@ -22,7 +22,7 @@ public class StatsTest {
 
     @Test
     public void test() {
-        Stats stats = Stats.getInstance();
+        Stats stats = new Stats(0);
         stats.log = log;
         stats.logCsv = logCsv;
 
