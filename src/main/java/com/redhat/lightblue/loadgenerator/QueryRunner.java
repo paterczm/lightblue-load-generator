@@ -67,13 +67,12 @@ public class QueryRunner implements Runnable {
                             : new DataFindRequest(query.getEntity());
 
                     dfr.select(Projection.includeFieldRecursively("*"));
-                    if (!query.getRange().isIdRange()) {
+                    if (!query.getRange().isIdRange) {
                         // far ranges can take very long to fetch, b/c the cursor needs to travel far
                         dfr.range(from, to);
                     } else {
-                        // use index
-                        // works only for numeric _ids
-                        dfr.where(Query.and(Query.withValue("_id", Query.gte, from), Query.withValue("_id", Query.lte, to)));
+                        // use numeric field, should be indexed
+                        dfr.where(Query.and(Query.withValue(r.idField, Query.gte, from), Query.withValue(r.idField, Query.lte, to)));
                     }
 
                     log.debug(String.format("Iteration %d: Running query %s from %d to %d", i, query, from, to));

@@ -41,7 +41,7 @@ public class QueryRunnerTest {
 
     @Test
     public void testQueryRunner() throws LightblueException {
-        RQuery q1 = new RQuery("q1", "user", null, new Range(0, 7000000, 1000, false), 0, 10, 0, false);
+        RQuery q1 = new RQuery("q1", "user", null, new Range(0, 7000000, 1000, false, "_id"), 0, 10, 0, false, false);
 
         new QueryRunner(q1, client, false, null, false).run();
 
@@ -62,7 +62,7 @@ public class QueryRunnerTest {
 
     @Test
     public void testQueryRunner2() throws LightblueException {
-        RQuery q2 = new RQuery("q2", "legalEntity", "0.0.3", new Range(1000000, 5000000, 2000, false), 0, 20, 0, false);
+        RQuery q2 = new RQuery("q2", "legalEntity", "0.0.3", new Range(1000000, 5000000, 2000, false,"_id"), 0, 20, 0, false, false);
 
         new QueryRunner(q2, client, false, null, false).run();
 

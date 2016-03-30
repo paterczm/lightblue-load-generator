@@ -2,6 +2,8 @@ package com.redhat.lightblue.loadgenerator;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Date;
@@ -123,11 +125,18 @@ public class LightblueLoadGenerator {
                 }
             }
 
+            // document what we're running
+            log.info(getPropertyAsString(p));
+
             LightblueHttpClient client = new LightblueHttpClient(lbClientFilePath);
 
             for(RQuery query: RQuery.fromProperties(p)) {
                 for (int i = 0; i < query.getThreads(); i++) {
-                    new Thread(new QueryRunner(query, client, runForver, runUntil, stats)).start();
+                    if (!query.isIgnore()) {
+                        new Thread(new QueryRunner(query, client, runForver, runUntil, stats)).start();
+                    } else {
+                        log.debug("Ignoring "+query.getName());
+                    }
                 }
             }
 
@@ -137,5 +146,11 @@ public class LightblueLoadGenerator {
             formatter.printHelp(120, LightblueLoadGenerator.class.getSimpleName(), "", options, "See https://github.com/paterczm/lightblue-load-generator/");
             System.exit(1);
         }
+    }
+
+    public static String getPropertyAsString(Properties prop) {
+        StringWriter writer = new StringWriter();
+        prop.list(new PrintWriter(writer));
+        return writer.getBuffer().toString();
     }
 }

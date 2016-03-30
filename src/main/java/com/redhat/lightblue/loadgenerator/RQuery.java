@@ -19,24 +19,24 @@ public class RQuery {
         int max;
         int size;
         boolean isIdRange;
+        String idField;
 
         public Range() {
         }
 
-        public Range(int min, int max, int size, boolean isIdRange) {
+        public Range(int min, int max, int size, boolean isIdRange, String idField) {
             super();
             this.min = min;
             this.max = max;
             this.size = size;
             this.isIdRange = isIdRange;
+            this.idField = idField;
         }
 
-        public boolean isIdRange() {
-            return isIdRange;
-        }
+
     }
 
-    public RQuery(String queryName, String entity, String version, Range range, int threads, int loop, int delayMS, boolean withSave) {
+    public RQuery(String queryName, String entity, String version, Range range, int threads, int loop, int delayMS, boolean withSave, boolean ignore) {
         super();
         this.entity = entity;
         this.version = version;
@@ -46,15 +46,18 @@ public class RQuery {
         this.delayMS = delayMS;
         this.name = queryName;
         this.withSave = withSave;
+        this.ignore = ignore;
 
         Objects.requireNonNull(entity);
         Objects.requireNonNull(range);
         Objects.requireNonNull(name);
+        if (range.isIdRange)
+            Objects.requireNonNull(range.idField);
     }
 
     private String entity, version, name;
     private Range range;
-    boolean withSave;
+    private boolean withSave, ignore;
 
     private int threads, loop, delayMS;
 
@@ -78,12 +81,14 @@ public class RQuery {
         range.max = Integer.parseInt(p.getProperty(name + ".range.max"));
         range.size = Integer.parseInt(p.getProperty(name + ".range.size", "1"));
         range.isIdRange = Boolean.parseBoolean(p.getProperty(name + ".range.isIdRange", "false"));
+        range.idField = p.getProperty(name + ".range.idField");
         int threads = Integer.parseInt(p.getProperty(name + ".threads"));
         int loop = Integer.parseInt(p.getProperty(name + ".loop", "0"));
         int delay = Integer.parseInt(p.getProperty(name + ".delayMS", "100"));
         boolean withSave = Boolean.parseBoolean(p.getProperty(name + ".withSave", "false"));
+        boolean ignore = Boolean.parseBoolean(p.getProperty(name + ".ignore", "false"));
 
-        return new RQuery(name, entity, version, range, threads, loop, delay, withSave);
+        return new RQuery(name, entity, version, range, threads, loop, delay, withSave, ignore);
     }
 
     public static List<RQuery> fromProperties(Properties p) {
@@ -125,6 +130,10 @@ public class RQuery {
 
     public boolean isWithSave() {
         return withSave;
+    }
+
+    public boolean isIgnore() {
+        return ignore;
     }
 
 }
