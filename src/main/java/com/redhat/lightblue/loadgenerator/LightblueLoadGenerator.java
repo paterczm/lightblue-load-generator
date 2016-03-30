@@ -80,7 +80,7 @@ public class LightblueLoadGenerator {
                 .desc("How often generate stats")
                 .longOpt("stats-delay")
                 .hasArg()
-                .argName("minutes")
+                .argName("seconds")
                 .build();
 
         // add options
@@ -108,10 +108,10 @@ public class LightblueLoadGenerator {
             boolean runForver = cmd.hasOption("run-forever");
             boolean stats = cmd.hasOption("stats");
             Date runUntil = cmd.hasOption("run-for-minutes") ? new Date(new Date().getTime() + 1000*60*Integer.parseInt(cmd.getOptionValue("run-for-minutes"))) : null;
-            Stats.CALCULATE_STATS_EVERY_MS = cmd.getOptionValue("stats-delay") == null ? Stats.CALCULATE_STATS_EVERY_MS : Integer.parseInt(cmd.getOptionValue("stats-delay"));
+            int calculateStatsEveryMs = cmd.getOptionValue("stats-delay") == null ? 15000 : 1000*Integer.parseInt(cmd.getOptionValue("stats-delay"));
 
             if (stats)
-                Stats.init();
+                Stats.init(calculateStatsEveryMs);
             
             Properties p = new Properties();
             for (String queriesFilePath: queriesFilePaths) {

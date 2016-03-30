@@ -19,9 +19,10 @@ public class Stats implements Runnable {
 
     public static final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
 
-    public static int CALCULATE_STATS_EVERY_MS = 15000;
+    public final int CALCULATE_STATS_EVERY_MS;
 
-    private Stats() {
+    private Stats(int calculateStatsEveryMs) {
+        this.CALCULATE_STATS_EVERY_MS = calculateStatsEveryMs;
         log.info("Starting stats (delay="+CALCULATE_STATS_EVERY_MS+"ms)");
     }
 
@@ -83,14 +84,15 @@ public class Stats implements Runnable {
         }
     }
 
-    private final static Stats stats = new Stats();
+    private static Stats stats = null;
 
     public static Stats getInstance() {
         return stats;
     }
 
-    public static void init() {
-        new Thread(getInstance()).start();
+    public static void init(int calculateStatsEveryMs) {
+        stats = new Stats(calculateStatsEveryMs);
+        new Thread(stats).start();
     }
 
     @Override

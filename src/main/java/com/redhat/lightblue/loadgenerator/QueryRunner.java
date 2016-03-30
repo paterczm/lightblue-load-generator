@@ -51,7 +51,7 @@ public class QueryRunner implements Runnable {
                 boolean findQueryCompleted = false;
                 try {
                     
-                    if (i == 0 && query.getThreads() >= 1) {
+                    if (i == 0 && query.getThreads() > 4) {
                         // add a random wait on first iteration to better distribute the load
                         Thread.sleep(random.nextInt(Math.max(INITIAL_DELAY_PER_THREAD_MS*query.getThreads(), MAX_INITIAL_DELAY_MS)));
                     }
