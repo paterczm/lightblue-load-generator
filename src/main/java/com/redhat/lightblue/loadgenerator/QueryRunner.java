@@ -76,7 +76,7 @@ public class QueryRunner implements Runnable {
                         dfr.where(Query.and(Query.withValue("_id", Query.gte, from), Query.withValue("_id", Query.lte, to)));
                     }
 
-                    log.info(String.format("Iteration %d: Running query %s from %d to %d", i, query, from, to));
+                    log.debug(String.format("Iteration %d: Running query %s from %d to %d", i, query, from, to));
                     long t0 = new Date().getTime();
                     LightblueDataResponse response = client.data(dfr);
                     long t1 = new Date().getTime();
@@ -90,7 +90,7 @@ public class QueryRunner implements Runnable {
                         // save data back to lightblue
                         LiteralDataRequest save = new LiteralDataRequest(query.getEntity(), query.getVersion(), createSaveRequestBody(response.getProcessed()), HttpMethod.POST, "save", Operation.SAVE);
 
-                        log.info(String.format("Iteration %d: Saving back results of query %s", i, query));
+                        log.debug(String.format("Iteration %d: Saving back results of query %s", i, query));
                         t0 = new Date().getTime();
                         client.data(save);
                         t1 = new Date().getTime();
