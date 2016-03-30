@@ -41,7 +41,7 @@ public class StatsTest {
 
         stats.printStats(QUERY_NAME);
 
-        Mockito.verify(log).info("find-query                                        : successfulCalls=11      , failedCalls=1       , perc50=2000 ms, perc75= 3000ms, perc90= 3000ms, perc95= 3001ms");
+        Mockito.verify(log).info("find-query                                        : successfulCalls=11      , failedCalls=1       , perc50= 2000ms, perc75= 3000ms, perc90= 3000ms, perc95= 3001ms");
 
         ArgumentCaptor<String> argumentCaptor = ArgumentCaptor.forClass(String.class);
 
