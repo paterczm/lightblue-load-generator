@@ -71,10 +71,10 @@ public class Stats implements Runnable {
             int perc90 = successfullCallsArray[successfullCallsCount * 9 / 10];
             int perc95 = successfullCallsArray[successfullCallsCount * 19 / 20];
 
-            log.info(String.format("%s: totalCalls=%d, failedCalls=%d%%, perc50=%dms, perc75=%dms, perc90=%dms, perc95=%dms", queryName,
-                    totalCallsCount, (int) (100f * failedCallsCount / totalCallsCount), perc50, perc75, perc90, perc95));
-            logCsv.info(String.format("%s,%s,%d,%f,%d,%d,%d,%d", dateFormat.format(new Date()), queryName,
-                    totalCallsCount, (float) (1f * failedCallsCount / totalCallsCount), perc50, perc75, perc90, perc95));
+            log.info(String.format("%-50s: successfulCalls=%-8d, failedCalls=%-8d, perc50=%-5dms, perc75=%5dms, perc90=%5dms, perc95=%5dms", queryName,
+                    successfullCallsCount, failedCallsCount, perc50, perc75, perc90, perc95));
+            logCsv.info(String.format("%s,%s,%d,%d,%d,%d,%d,%d", dateFormat.format(new Date()), queryName,
+                    successfullCallsCount, failedCallsCount, perc50, perc75, perc90, perc95));
         }
     }
 

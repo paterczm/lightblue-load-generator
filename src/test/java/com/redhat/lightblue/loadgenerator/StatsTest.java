@@ -41,14 +41,14 @@ public class StatsTest {
 
         stats.printStats(QUERY_NAME);
 
-        Mockito.verify(log).info("find-query: totalCalls=12, failedCalls=8%, perc50=2000ms, perc75=3000ms, perc90=3000ms, perc95=3001ms");
+        Mockito.verify(log).info("find-query                                        : successfulCalls=11      , failedCalls=1       , perc50=2000 ms, perc75= 3000ms, perc90= 3000ms, perc95= 3001ms");
 
         ArgumentCaptor<String> argumentCaptor = ArgumentCaptor.forClass(String.class);
 
         Mockito.verify(logCsv).info(argumentCaptor.capture());
 
         String info = argumentCaptor.getValue();
-        Assert.assertEquals("find-query,12,0.083333,2000,3000,3000,3001", info.substring(info.indexOf(",")+1));
+        Assert.assertEquals("find-query,11,1,2000,3000,3000,3001", info.substring(info.indexOf(",")+1));
     }
 
 }
