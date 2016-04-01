@@ -27,6 +27,7 @@ user500.range.min=0 # Minimum range
 user500.range.max=7000000 # Maximum range, i.e. you have 7 mi users
 user500.range.size=500 # Range size, i.e. you want to read users 500 at a time
 user500.range.isIdRange=true # If true, _id range is used to read batches of users (so has to be numeric). If false, a range is used.
+user500.range.idField=_id # name of the field to use for selecting ranges (when isIdRange=true)
 user500.loop=50 # How many times to run the query per thread
 user500.threads=10 # How many requests to lightblue in parallel
 user500.withSave=false # After reading the data, should it be saved back to lightblue to simulate writes?
